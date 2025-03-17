@@ -3,12 +3,7 @@ import { motion } from "framer-motion";
 import { Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { filesize } from "filesize";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
 export default function FileUpload() {
   const [isDragging, setIsDragging] = useState(false);
@@ -80,18 +75,21 @@ export default function FileUpload() {
         <p className="text-xs text-muted-foreground">
           Upload up to 2GB for free. No registration required.
         </p>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {files.map((file) => (
             <div key={file.name}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>{file.name}</CardTitle>
-                </CardHeader>
+              <Card className="px-12">
                 <CardContent className="text-muted-foreground">
-                  <p>size: {filesize(file.size)}</p>
+                  <CardTitle className="mb-1 text-black">{file.name}</CardTitle>
                   <p>
-                    last modified:{" "}
-                    {new Date(file.lastModified).toLocaleDateString().replace(/\//g, ".")}
+                    <span className="font-semibold">size: </span>
+                    {filesize(file.size)}
+                  </p>
+                  <p>
+                    <span className="font-semibold">last edited: </span>
+                    {new Date(file.lastModified)
+                      .toLocaleDateString()
+                      .replace(/\//g, ".")}
                   </p>
                 </CardContent>
               </Card>
