@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { procedure, router } from '../trpc';
+import { protectedProcedure, publicProcedure, router } from '../trpc/trpc';
+import { TRPCError } from '@trpc/server';
 
 const users = [
   { id: 1, name: 'Alice' },
@@ -9,12 +10,10 @@ const users = [
 
 export const userRouter = router({
   // Query to get all users
-  getAll: procedure.query(() => {
-    return users;
+  getAll: protectedProcedure.query(({ctx}) => {
+    return ctx.auth?.userId
   }),
-  
-  // Query to get a user by ID
-  getById: procedure
+  getById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ input }) => {
       const user = users.find(u => u.id === input.id);

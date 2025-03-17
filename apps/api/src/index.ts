@@ -2,7 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import { createExpressMiddleware } from '@trpc/server/adapters/express';
 import { userRouter } from './routers/user';
-import { router } from './trpc';
+import { router } from './trpc/trpc';
+import { clerkMiddleware, getAuth } from '@clerk/express';
+import 'dotenv/config';
 
 
 export const appRouter = router({
@@ -21,10 +23,20 @@ app.use(cors({
 }));
 
 // Add tRPC API endpoint
+app.use(clerkMiddleware());
+
+const createContext = ({ req, res }: { req: express.Request; res: express.Response }) => {
+  const auth = getAuth(req); // Extract authentication details
+  return { auth, req, res }; // Pass authentication to context
+};
+
+export type Context = ReturnType<typeof createContext>;
+
 app.use(
   '/api/trpc',
   createExpressMiddleware({
     router: appRouter,
+    createContext,
   })
 );
 
