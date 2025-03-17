@@ -12,28 +12,11 @@ import {
 } from "lucide-react";
 // import { trpc } from "./utils/trpc";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import Image from "next/image";
 import { SignUpButton } from "@clerk/nextjs";
+import FileUpload from "./components/file-upload";
 
 export default function Home() {
-  const [isDragging, setIsDragging] = useState(false);
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    // In a real app, you would handle file upload here
-  };
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -82,41 +65,7 @@ export default function Home() {
               </motion.p>
 
               <motion.div variants={itemVariants}>
-                <motion.div
-                  className={`mt-8 p-8 border-2 border-dashed rounded-xl transition-all ${
-                    isDragging ? "border-primary bg-primary/5" : "border-border"
-                  }`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  whileHover={{ scale: 1.01 }}
-                  animate={isDragging ? { scale: 1.02 } : { scale: 1 }}
-                >
-                  <div className="flex flex-col items-center justify-center space-y-4">
-                    <motion.div
-                      animate={{
-                        y: [0, -5, 0],
-                      }}
-                      transition={{
-                        repeat: Number.POSITIVE_INFINITY,
-                        duration: 2,
-                        repeatType: "reverse",
-                      }}
-                    >
-                      <Upload className="h-12 w-12 text-primary" />
-                    </motion.div>
-                    <p className="text-center">
-                      <span className="font-medium">
-                        Drag & drop files here
-                      </span>{" "}
-                      or click to browse
-                    </p>
-                    <Button size="lg">Select Files</Button>
-                    <p className="text-xs text-muted-foreground">
-                      Upload up to 2GB for free. No registration required.
-                    </p>
-                  </div>
-                </motion.div>
+                <FileUpload />
               </motion.div>
             </motion.div>
           </div>
@@ -413,13 +362,21 @@ export default function Home() {
                 whileHover={{ scale: 1.02 }}
               >
                 <SignUpButton>
-                  <Button className="cursor-pointer" size="lg" variant="secondary">
+                  <Button
+                    className="cursor-pointer"
+                    size="lg"
+                    variant="secondary"
+                  >
                     Try For Free
                   </Button>
                 </SignUpButton>
-                <Button size="lg" variant="outline" className="bg-transparent cursor-pointer">
-                 <Link href="/docs" className="flex items-center">
-                  Learn More <ChevronRight className="ml-1 h-4 w-4" />
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="bg-transparent cursor-pointer"
+                >
+                  <Link href="/docs" className="flex items-center">
+                    Learn More <ChevronRight className="ml-1 h-4 w-4" />
                   </Link>
                 </Button>
               </motion.div>

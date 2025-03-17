@@ -118,8 +118,19 @@ export default function Navbar() {
             FAQ
           </Link>
           <div className="flex flex-col space-y-2 pt-2">
-            <Button variant="outline">Log In</Button>
-            <Button>Sign Up</Button>
+            <SignedOut>
+              <SignInButton>
+                <Button className="cursor-pointer" variant="outline">
+                  Sign In
+                </Button>
+              </SignInButton>
+              <SignUpButton>
+                <Button className="cursor-pointer">Sign Up</Button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           </div>
         </motion.div>
       )}

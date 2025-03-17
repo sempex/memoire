@@ -19,6 +19,7 @@
     "@trpc/server": "11.0.0-rc.833",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "filesize": "^10.1.6",
     "framer-motion": "^12.5.0",
     "lucide-react": "^0.482.0",
     "next": "15.2.2",
