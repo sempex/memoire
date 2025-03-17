@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import Image from "next/image";
-import { SignUp, SignUpButton } from "@clerk/nextjs";
+import { SignUpButton } from "@clerk/nextjs";
 
 export default function Home() {
   const [isDragging, setIsDragging] = useState(false);
