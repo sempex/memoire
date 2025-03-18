@@ -144,9 +144,10 @@ export default function SimpleMultipartUpload() {
   };
 
   const uploadFiles = async () => {
-    for (const file of Object.values(files)) {
-      await uploadFile(file.file);
-    }
+    const uploadPromises = Object.values(files).map((file) =>
+      uploadFile(file.file)
+    );
+    await Promise.all(uploadPromises);
   };
 
   return (
