@@ -5,10 +5,11 @@ import { userRouter } from './routers/user';
 import { router } from './trpc/trpc';
 import { clerkMiddleware, getAuth } from '@clerk/express';
 import 'dotenv/config';
+import { s3Router } from './routers/s3';
 
 
 export const appRouter = router({
-  user: userRouter,
+  s3: s3Router
 });
 
 export type AppRouter = typeof appRouter;
