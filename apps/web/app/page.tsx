@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { SignUpButton } from "@clerk/nextjs";
-import FileUpload from "./components/file-upload";
+import SimpleMultipartUpload from "./components/file-upload";
 
 export default function Home() {
   const containerVariants = {
@@ -65,7 +65,7 @@ export default function Home() {
               </motion.p>
 
               <motion.div variants={itemVariants}>
-                <FileUpload />
+                <SimpleMultipartUpload />
               </motion.div>
             </motion.div>
           </div>
