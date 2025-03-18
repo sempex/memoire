@@ -187,13 +187,27 @@ export default function SimpleMultipartUpload() {
       <div className="grid grid-cols-2 gap-3 mt-4">
         {Object.values(files).map((file) => (
           <Card key={file.file.name}>
-            <CardContent>
+            <CardContent className="flex flex-col items-center">
               <p className="font-bold">{file.file.name}</p>
               <p className="text-secondary-foreground">
                 <span className="font-semibold">size: </span>
                 {filesize(file.file.size)}
               </p>
-              <Progress value={file.progress} />
+              {file.progress !== 0 && file.progress !== 100 ? (
+                <div className="flex items-center justify-center mt-2 w-2/3 h-7">
+                  <Progress value={file.progress}/>
+                </div>
+              ) : file.progress === 0 ? (
+                <div className="flex items-center justify-center border border-slate-500 bg-slate-200/75 rounded-full mt-2 w-2/3 h-7">
+                  <p className="font-semibold text-sm p-1">Added for upload</p>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center border border-green-500 bg-green-200/75 rounded-full mt-2 w-2/3 h-7">
+                  <p className="font-semibold text-sm p-1">
+                    Uploaded successfully
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
