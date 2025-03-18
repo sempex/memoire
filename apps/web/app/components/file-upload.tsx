@@ -1,13 +1,41 @@
 import { useState, useRef } from "react";
 import { trpc } from "../utils/trpc";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { filesize } from "filesize";
+import { nanoid } from "nanoid";
+import { Progress } from "@/components/ui/progress";
 
 // Chunk size for multipart upload (5MB)
 const CHUNK_SIZE = 5 * 1024 * 1024;
 
+type Filehandler = {
+  file: File;
+  status: string;
+  progress: number;
+};
+
 export default function SimpleMultipartUpload() {
-  const [file, setFile] = useState<File | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState<string>("");
+  const [isDragging, setIsDragging] = useState(false);
+  const [files, setFiles] = useState<Record<string, Filehandler>>({});
+  const userUploadId = nanoid();
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    // In a real app, you would handle file upload here
+  };
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // tRPC mutations
@@ -17,22 +45,32 @@ export default function SimpleMultipartUpload() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0]);
-      setProgress(0);
-      setStatus("File selected");
+      const updatedFiles = { ...files };
+
+      Array.from(e.target.files).forEach((file) => {
+        updatedFiles[file.name] = {
+          file: file,
+          status: "selected",
+          progress: 0,
+        };
+      });
+
+      setFiles(updatedFiles);
     }
   };
 
-  const uploadFile = async () => {
+  const uploadFile = async (file: File) => {
     if (!file) return;
 
     try {
-      setStatus("Initiating upload...");
-
+      let updatedFiles = { ...files };
+      updatedFiles[file.name].status = "Initiating upload...";
+      setFiles(updatedFiles);
       // Step 1: Initiate multipart upload
       const { uploadId, objectName } = await initiateUpload.mutateAsync({
         fileName: file.name,
         contentType: file.type,
+        uploadId: userUploadId,
       });
 
       // Calculate total parts
@@ -42,7 +80,10 @@ export default function SimpleMultipartUpload() {
       // Step 2: Upload each part
       for (let i = 0; i < numParts; i++) {
         const part = i + 1;
-        setStatus(`Uploading part ${part} of ${numParts}...`);
+        let updatedFiles = { ...files };
+        updatedFiles[file.name].status =
+          `Uploading part ${part} of ${numParts}...`;
+        setFiles(updatedFiles);
 
         // Get presigned URL for this part
         const { partUploadUrl } = await getPartUrl.mutateAsync({
@@ -72,65 +113,90 @@ export default function SimpleMultipartUpload() {
         parts.push({ part, etag });
 
         // Update progress
-        setProgress(Math.round((part / numParts) * 100));
+        updatedFiles = { ...files };
+        updatedFiles[file.name].progress = Math.round((part / numParts) * 100);
+        setFiles(updatedFiles);
       }
 
       // Step 3: Complete multipart upload
-      setStatus("Completing upload...");
+      updatedFiles = { ...files };
+      updatedFiles[file.name].status = "Completing upload...";
+      setFiles(updatedFiles);
+
       await completeUpload.mutateAsync({
         objectName,
         uploadId,
         parts,
       });
 
-      setStatus("Upload completed successfully!");
-      setProgress(100);
+      updatedFiles = { ...files };
+      updatedFiles[file.name].status = "Upload completed successfully!";
+      updatedFiles[file.name].progress = 100;
+
+      setFiles(updatedFiles);
     } catch (error) {
       console.error("Upload failed:", error);
-      setStatus(
-        `Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
+      const updatedFiles = { ...files };
+      updatedFiles[file.name].status =
+        `Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`;
+      setFiles(updatedFiles);
+    }
+  };
+
+  const uploadFiles = async () => {
+    for (const file of Object.values(files)) {
+      await uploadFile(file.file);
     }
   };
 
   return (
-    <div className="p-4 border rounded">
-      <h2 className="text-lg font-bold mb-4">Simple Multipart Upload</h2>
-
-      <div className="mb-4">
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          className="mb-2"
-        />
-
-        {file && (
-          <div>
-            <p>
-              Selected file: {file.name} ({Math.round(file.size / 1024)} KB)
-            </p>
-            <button
-              onClick={uploadFile}
-              className="px-4 py-2 bg-blue-500 text-white rounded mt-2"
-              disabled={progress > 0 && progress < 100}
-            >
-              Upload
-            </button>
-          </div>
-        )}
+    <motion.div
+      className={`gap-3 mt-8 p-8 border-2 border-dashed rounded-xl transition-all ${
+        isDragging ? "border-primary bg-primary/5" : "border-border"
+      }`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      whileHover={{ scale: 1.01 }}
+      animate={isDragging ? { scale: 1.02 } : { scale: 1 }}
+    >
+      <div className="flex items-center justify-center gap-3">
+        <Button
+          className="cursor-pointer"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          Browse Files
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            multiple
+          />
+        </Button>
+        <Button
+          onClick={() => uploadFiles()}
+          className="rounded cursor-pointer"
+          // disabled={progress > 0 && progress < 100}
+          variant="outline"
+        >
+          Upload
+        </Button>
       </div>
-
-      {status && <p className="mb-2">{status}</p>}
-
-      {progress > 0 && (
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
-          <div
-            className="bg-blue-600 h-2.5 rounded-full"
-            style={{ width: `${progress}%` }}
-          ></div>
-        </div>
-      )}
-    </div>
+      <div className="grid grid-cols-2 gap-3 mt-4">
+        {Object.values(files).map((file) => (
+          <Card key={file.file.name}>
+            <CardContent>
+              <p className="font-bold">{file.file.name}</p>
+              <p className="text-secondary-foreground">
+                <span className="font-semibold">size: </span>
+                {filesize(file.file.size)}
+              </p>
+              <Progress value={file.progress} />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </motion.div>
   );
 }

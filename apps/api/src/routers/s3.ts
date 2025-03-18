@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../trpc/trpc";
 import { Client } from "minio";
-import { nanoid } from "nanoid";
 
 // Initialize MinIO client
 const mc = new Client({
@@ -22,12 +21,12 @@ export const s3Router = router({
       z.object({
         fileName: z.string(),
         contentType: z.string(),
+        uploadId: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { fileName, contentType } = input;
+      const { fileName, contentType, uploadId } = input;
       const user = ctx.auth;
-      const uploadId = nanoid();
       const objectName = `${user.userId}/${uploadId}/${fileName}`;
 
       try {
