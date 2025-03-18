@@ -13,30 +13,57 @@ const mc = new Client({
 
 const bucketName = process.env.S3_BUCKET_NAME || "memoire";
 
+type getUploadUrlsResponse = {
+  uploadId: string;
+  key: string;
+  presignedUrls: string[];
+}[];
+
 export const s3Router = router({
   // Query to get all users
-  getUploadUrl: protectedProcedure
+  getUploadUrls: protectedProcedure
     .input(
-      z.object({
-        fileName: z.string(),
-        contentType: z.string(),
-        expiration: z.number(),
-      })
+      z.array(
+        z.object({
+          fileName: z.string(),
+          filesize: z.number(),
+          contentType: z.string(),
+          partCount: z.number(),
+        })
+      )
     )
     .mutation(async ({ input, ctx }) => {
-// expiration is in seconds
-      const { fileName, contentType, expiration } = input;
+      // expiration is in seconds
       const user = ctx.auth;
+      const response: getUploadUrlsResponse = [];
       const uploadId = nanoid();
 
-      const objectName = `${user.userId}/${uploadId}/${fileName}`;
-
-      const uploadUrl = await mc.presignedPutObject(
-        bucketName,
-        objectName,
-        expiration
-      );
-
-      return { uploadUrl, fileUrl: objectName };
+      for (const file of input) {
+        const objectName = `${user.userId}/${uploadId}/${file.fileName}`;
+        const s3UploadId = await mc.initiateNewMultipartUpload(
+          bucketName,
+          objectName,
+          {
+            "Content-Type": file.contentType,
+          }
+        );
+        const presignedUrls = [];
+        for (let i = 1; i <= file.partCount; i++) {
+          const presignedUrl = await mc.presignedPutObject(
+            bucketName,
+            objectName,
+            24 * 60 * 60
+          );
+          presignedUrls.push(presignedUrl);
+        }
+        console.log({ uploadId, objectName, presignedUrls });
+        response.push({
+          uploadId: s3UploadId,
+          key: objectName,
+          presignedUrls,
+        });
+      }
+      console.log(response);
+      return response;
     }),
 });

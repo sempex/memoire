@@ -1,14 +1,26 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { filesize } from "filesize";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { trpc } from "../utils/trpc";
+
+const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
 
 export default function FileUpload() {
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // const getUploadUrlMutation = trpc.s3.getUploadUrl.useMutation();
+  // getUploadUrlMutation.mutate({
+  //   fileName: "test.jpg",
+  //   expiration: 60 * 60 * 60 * 24,
+  //   contentType: "image/jpeg",
+  // });
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -25,6 +37,32 @@ export default function FileUpload() {
     setFiles([...files, ...e.dataTransfer.files]);
     // In a real app, you would handle file upload here
   };
+  const getUploadUrlsMutation = trpc.s3.getUploadUrls.useMutation();
+  const upload = (files: File[]) => {
+    try {
+      getUploadUrlsMutation.mutate(
+        files.map((file) => {
+          return {
+            fileName: file.name,
+            contentType: file.type,
+            filesize: file.size,
+            partCount: Math.ceil(file.size / CHUNK_SIZE),
+          };
+        }),
+        {
+          onSuccess: (data) => {
+            console.log(data);
+          },
+          onError: (error) => {
+            console.error(error);
+          },
+        }
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <motion.div
       className={`mt-8 p-8 border-2 border-dashed rounded-xl transition-all ${
@@ -72,6 +110,7 @@ export default function FileUpload() {
             }}
           />
         </Button>
+        <Button onClick={() => upload(files)}>Upload</Button>
         <p className="text-xs text-muted-foreground">
           Upload up to 2GB for free. No registration required.
         </p>
