@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../trpc/trpc";
-import { Client } from "minio";
+import { BucketItem, Client } from "minio";
 
 // Initialize MinIO client
 const mc = new Client({
@@ -22,7 +22,7 @@ export const s3Router = router({
         fileName: z.string(),
         contentType: z.string(),
         uploadId: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { fileName, contentType, uploadId } = input;
@@ -36,7 +36,7 @@ export const s3Router = router({
           objectName,
           {
             "Content-Type": contentType,
-          }
+          },
         );
 
         return {
@@ -58,7 +58,7 @@ export const s3Router = router({
         uploadId: z.string(),
         partNumber: z.number().int().positive(),
         expiration: z.number().default(3600),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       const { objectName, uploadId, partNumber, expiration } = input;
@@ -73,7 +73,7 @@ export const s3Router = router({
           {
             uploadId: uploadId,
             partNumber: partNumber.toString(),
-          }
+          },
         );
 
         return { partUploadUrl };
@@ -93,9 +93,9 @@ export const s3Router = router({
           z.object({
             part: z.number().int().positive(),
             etag: z.string(),
-          })
+          }),
         ),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       const { objectName, uploadId, parts } = input;
@@ -106,7 +106,7 @@ export const s3Router = router({
           bucketName,
           objectName,
           uploadId,
-          parts
+          parts,
         );
 
         return {
@@ -125,7 +125,7 @@ export const s3Router = router({
       z.object({
         objectName: z.string(),
         uploadId: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       const { objectName, uploadId } = input;
@@ -138,6 +138,42 @@ export const s3Router = router({
       } catch (error) {
         console.error("Error aborting multipart upload:", error);
         throw error;
+      }
+    }),
+  listFiles: protectedProcedure
+    .input(
+      z.object({
+        shareUser: z.string(),
+        shareId: z.string(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { shareUser, shareId } = input;
+
+      try {
+        const files = mc.listObjectsV2(
+          bucketName,
+          `${shareUser}/${shareId}`,
+          true,
+        );
+
+        const objectsList: BucketItem[] = [];
+        await new Promise((resolve, reject) => {
+          files.on("data", (obj) => {
+            objectsList.push(obj);
+          });
+
+          files.on("end", () => {
+            resolve(objectsList);
+          });
+
+          files.on("error", (err) => {
+            reject(err);
+          });
+        });
+        return objectsList;
+      } catch (error) {
+        console.error("Error listing files:", error);
       }
     }),
 });
