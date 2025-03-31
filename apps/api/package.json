@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "module",
+  "type": "commonjs",
   "packageManager": "pnpm@9.0.0",
   "scripts": {
     "dev": "tsx watch src/index.ts",
