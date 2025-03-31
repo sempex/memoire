@@ -5,6 +5,11 @@ import { TRPCProvider } from "./components/trpc-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "./components/navbar";
 import { PublicEnvScript } from "next-runtime-env";
+import { env } from "next-runtime-env";
+
+export const NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = env(
+  "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+);
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
