@@ -4,6 +4,7 @@ import "./globals.css";
 import { TRPCProvider } from "./components/trpc-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "./components/navbar";
+import { PublicEnvScript } from "next-runtime-env";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,7 +18,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "memoire",
-  description: "Upload, share, and safeguard your important files with just a few clicks. Your digital memories, secured forever.",
+  description:
+    "Upload, share, and safeguard your important files with just a few clicks. Your digital memories, secured forever.",
 };
 
 export default function RootLayout({
@@ -28,6 +30,9 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
+        <head>
+          <PublicEnvScript />
+        </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >

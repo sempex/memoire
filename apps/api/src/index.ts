@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { userRouter } from "./routers/user";
 import { router } from "./trpc/trpc";
 import { clerkMiddleware, getAuth } from "@clerk/express";
 import "dotenv/config";
@@ -55,4 +54,3 @@ app.use("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
