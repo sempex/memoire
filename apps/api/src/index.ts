@@ -18,7 +18,9 @@ const PORT = 4000;
 // Enable CORS
 app.use(
   cors({
-    origin: ["http://localhost:3000"], // Allow your Next.js app origin
+    origin: [
+      "http://localhost:3000, https://memoire.rebertim.com, https://memoire.on.shiper.app",
+    ], // Allow your Next.js app origin
     credentials: true,
   }),
 );
