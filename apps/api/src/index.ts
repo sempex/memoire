@@ -19,7 +19,9 @@ const PORT = 4000;
 app.use(
   cors({
     origin: [
-      "http://localhost:3000, https://memoire.rebertim.com, https://memoire.on.shiper.app",
+      "http://localhost:3000",
+      "https://memoire.rebertim.com",
+      "https://memoire-web.on.shiper.app",
     ], // Allow your Next.js app origin
     credentials: true,
   }),
