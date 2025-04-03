@@ -5,6 +5,7 @@ import { router } from "./trpc/trpc";
 import { clerkMiddleware, getAuth } from "@clerk/express";
 import "dotenv/config";
 import { s3Router } from "./routers/s3";
+import webhookRouter from "./webhooks/clerk";
 
 export const appRouter = router({
   s3: s3Router,
@@ -24,11 +25,10 @@ app.use(
       "https://memoire-web.on.shiper.app",
     ], // Allow your Next.js app origin
     credentials: true,
-  }),
+  })
 );
 
-// Add tRPC API endpoint
-app.use(clerkMiddleware());
+// app.use(clerkMiddleware());
 
 const createContext = ({
   req,
@@ -48,12 +48,15 @@ app.use(
   createExpressMiddleware({
     router: appRouter,
     createContext,
-  }),
+  })
 );
 
 app.use("/", (req, res) => {
   res.send("memoire backend");
 });
+
+app.use(express.json());
+app.use("/api/webhooks", webhookRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
