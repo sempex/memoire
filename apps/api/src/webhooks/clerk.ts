@@ -1,10 +1,10 @@
+import { UserWebhookEvent, WebhookEvent } from "@clerk/express";
 import { Router } from "express";
 import { Webhook } from "svix";
 
 const webhookRouter = Router();
 
 webhookRouter.post("/", async (req, res) => {
-  console.log("Received webhook from Svix");
   const SIGNING_SECRET = process.env.SIGNING_SECRET;
 
   if (!SIGNING_SECRET) {
@@ -33,7 +33,7 @@ webhookRouter.post("/", async (req, res) => {
     });
   }
 
-  let evt: any;
+  let evt: UserWebhookEvent;
 
   // Attempt to verify the incoming webhook
   // If successful, the payload will be available from 'evt'
@@ -43,7 +43,7 @@ webhookRouter.post("/", async (req, res) => {
       "svix-id": svix_id as string,
       "svix-timestamp": svix_timestamp as string,
       "svix-signature": svix_signature as string,
-    });
+    }) as UserWebhookEvent;
   } catch (err: any) {
     console.log("Error: Could not verify webhook:", err.message);
     return void res.status(400).json({
@@ -52,13 +52,19 @@ webhookRouter.post("/", async (req, res) => {
     });
   }
 
-  const eventType = evt.type;
-  console.log(
-    `Received webhook with ID ${evt.id} and event type of ${eventType}`
-  );
-  console.log("Webhook payload:", evt.data);
+  switch (evt.type) {
+    case "user.created":
+      console.log("User created");
+      break;
+    case "user.updated":
+      console.log("User updated");
+      break;
+    case "user.deleted":
+      console.log("User deleted");
+      break;
+  }
 
-  return void res.status(400).json({
+  return void res.status(200).json({
     success: true,
     message: "Webhook received",
   });
