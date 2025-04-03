@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @unique
+  shares Share[]
+}
+
+model Share {
+    id String @id @default(uuid())
+    files File[]
+    userId String
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model File {
+    id String @id @default(cuid())
+    filename String
+    filesize Int
+    lastModified DateTime
+    path String
+    shareId String
+    share Share @relation(fields: [shareId], references: [id], onDelete: Cascade)
+}
