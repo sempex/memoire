@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "preserveWatchOutput": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "outDir": "./dist",
+  },
+  "include": ["src/**/*", "prisma/migrations/**/*.ts"],
+  "exclude": ["node_modules", "prisma/field-encryption-migrations/**/*.ts"],
+}

@@ -1,7 +1,7 @@
 import { UserWebhookEvent, WebhookEvent } from "@clerk/express";
 import { Router } from "express";
 import { Webhook } from "svix";
-import prisma from "../utils/prisma";
+import { prisma } from "@memoire/db"
 
 const webhookRouter = Router();
 
@@ -57,7 +57,7 @@ webhookRouter.post("/", async (req, res) => {
     case "user.created":
       await prisma.user.create({
         data: {
-          
+          id: evt.data.id,
         }
       })
       break;
