@@ -10,14 +10,16 @@
     "strict": true /* Enable all strict type-checking options. */ /* Skip type checking .d.ts files that are included with TypeScript. */,
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "outDir": "dist/",
-    "noUncheckedIndexedAccess": true,
+    "noUncheckedIndexedAccess": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"],
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node",
-    "transpileOnly": true,
+    "transpileOnly": true
   },
-  "references": [{ "path": "../../packages/database" }],
+  "paths": {
+    "@memoire/db/*": ["../../packages/database/*"]
+  }
 }
